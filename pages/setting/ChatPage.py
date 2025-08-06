@@ -6,7 +6,6 @@ import time
 from base.base_driver import BaseDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from my_sql.base_mysql import Kcs_Category
 from utilities.ValidationControls import ValidationControls
 from utilities.utils import Utils
 from utilities.web_element import WebItem
@@ -75,8 +74,10 @@ class ChatPage(BaseDriver):
             record_test['screen_shot'] = self.take_screenshot()
         return record_test
 
-
-
+    def set_model_name(self,model_name):
+        button_dropdown = self.find_element(By.XPATH, self.BUTTON_DROP_DOWN)
+        button_dropdown.click()
+        self.get_dropdown_item_by_name(model_name)
     def chat_with_model(self,model_name,data):
         button_dropdown = self.find_element(By.XPATH, self.BUTTON_DROP_DOWN)
         button_dropdown.click()

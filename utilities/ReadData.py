@@ -34,9 +34,11 @@ class ChatResponseData(ReadData):
         super().__init__(data_file_name)
     def read_data(self):
         df = pd.read_excel(self.data_file_name, engine="openpyxl")
-        df = df.iloc[:, 2:]
-        df.columns = ['question', 'expected_result', 'keyword', 'actual_result_1',
-                      'actual_result_2','actual_result_3','actual_result_4','actual_result_5']
+        df = df.iloc[:, [1,4,6,7]]
+        df.columns = ["file_name",'question', 'expected_context', 'expected_result']
+
+        df['file_name'] = df['file_name'].str.split('https').str[0]
+        df = df.dropna(subset=['file_name'])
         return df.to_dict('records')
 
 

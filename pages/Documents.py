@@ -2,13 +2,13 @@ import os
 from datetime import datetime
 
 import pyautogui
+import pyperclip
 from selenium.webdriver.common.by import By
 
 import time
 from base.base_driver import BaseDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from my_sql.base_mysql import Kcs_Category
 from utilities.FileUploader import FileUploader
 from utilities.ValidationControls import ValidationControls
 from utilities.utils import Utils
@@ -26,15 +26,11 @@ class Documents(BaseDriver):
             )
             upload_div.click()
             pyautogui.hotkey('ctrl', 'l')
-            time.sleep(1)
-            directory_path = os.path.dirname(absolute_file_path)
-            filename = os.path.basename(absolute_file_path)
-            pyautogui.write(directory_path)
+            time.sleep(2)
+            pyperclip.copy(absolute_file_path)
+            pyautogui.hotkey('ctrl', 'v')
             pyautogui.press('enter')
-            time.sleep(1)
-            pyautogui.write(filename)
-            pyautogui.press('enter')
-            time.sleep(1)
+            time.sleep(2)
             return True
         except Exception as e:
             print(f"Enhanced dialog method failed: {e}")
