@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 
 import time
@@ -9,6 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from utilities.ValidationControls import ValidationControls
 from utilities.utils import Utils
 from utilities.web_element import WebItem
+from selenium.webdriver.common.keys import Keys
 # every chat bot must answer in 3 seconds
 DEAD_LINE_TIME = 120
 
@@ -60,12 +62,10 @@ class ChatPage(BaseDriver):
             grant_parent = parent.find_element(By.XPATH, "..")
             button_quotes = grant_parent.find_elements(By.XPATH, "//button[contains(@class, 'btn-quote')]")
             button_quotes[-1].click()
-            div_contents = self.find_element(By.XPATH,"//div[@class='rounded-4 border p-4 scroll-y mb-3']")
-
-
-            paragraphs = div_contents.find_elements(By.TAG_NAME,"p")
-            record_test['context'] = paragraphs[-1].text
-
+            time.sleep(10)
+            div_contents = self.find_element(By.XPATH,"//div[contains(@class, 'modal-body scroll')]")
+            record_test['context'] = div_contents.text
+            ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
         except:
             record_test['actual_answer'] = ""
             record_test['test_result'] = "fail"

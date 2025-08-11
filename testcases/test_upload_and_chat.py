@@ -48,9 +48,9 @@ class TestUploadAndChat(softest.TestCase):
                                         pass_word=pass_word)
         test_samples = random.sample(self.test_dataset,num_question)
         setting = hp.get_setting_menu()
-
+        """
         document_window = setting.get_documents_menu()
-
+        
         for test_sample in test_samples:
             file_name = test_sample['file_name'].strip()
             if self.data_base.check_document_exist(document_file_name=file_name) == False:
@@ -64,18 +64,25 @@ class TestUploadAndChat(softest.TestCase):
                         document_window.process_upload_file(category_name)
                     time.sleep(60)
 
-
+        """
         chat_window = setting.get_chat_menu()
         chat_window.enter_new_chat()
-        MODEL_NAME = "DeepSeek-R1-Distill-Llama-70B-FP8-Agent"
+        MODEL_NAME = "DeepSeek-R1-Distill-Llama-70B-FP8-Reasoning"
         chat_window.set_model_name(MODEL_NAME)
-        extracted_files = self.data_base.get_document_extracted()
+        #extracted_files = self.data_base.get_document_extracted()
+        extracted_files = get_upload_files()
         chat_results = []
         for test_sample in test_samples:
             file_name = test_sample['file_name'].strip()
-            if file_name in extracted_files:
+            result = [s for s in extracted_files if file_name in s]
+            if len(result) > 0:
+            #if file_name in extracted_files:
                 chat_result = chat_window.chat_single_question(test_sample)
                 chat_results.append(chat_result)
+                time.sleep(4)
+        export_data_to_excel(chat_result,
+                             '../test_results/' + user_name + '/' + MODEL_NAME + '_result.xlsx',
+                             'screen_shot')
     def test_with_extracted_files(self):
         dataset = self.test_dataset
         extracted_files = self.data_base.get_document_extracted()
