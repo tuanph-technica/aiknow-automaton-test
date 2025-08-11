@@ -2,6 +2,7 @@ from selenium.webdriver.common.by import By
 import time
 from base.base_driver import BaseDriver
 from pages.Setting import Setting
+from pages.UserManagement import UserManagement
 from utilities.web_element import WebItem
 
 
@@ -35,6 +36,10 @@ class AiKnowHomePage(BaseDriver):
         return setting
     def get_document_menu(self):
         self.get_menu_by_name(menu_name="Documents")
+    def get_user_management_menu(self):
+        self.get_menu_by_name(menu_name="User Management")
+        ret = UserManagement(self.driver)
+        return ret
 
 
 
