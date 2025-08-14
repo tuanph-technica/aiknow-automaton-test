@@ -20,17 +20,17 @@ class TestUserManagement(softest.TestCase):
         self.login = Login(self.driver)
         self.ut = Utils()
         self.user_account = user_account
-    def validate_add_user(self):
+    def test_validate_add_user(self):
         user_name = "auto_user0008"
         pass_word = "123456"
         hp, error = self.login.do_login(user_name=user_name,
                                         pass_word=pass_word)
         user_management_page = hp.get_user_management_menu()
-        user_management_page.open_add_user(user_obj=None)
+        user_management_page.open_add_user()
         dataset_obj = UserManagementData(DATA_TEST_FILE)
         validation_dataset = dataset_obj.read_data(sheet_name="validation")
         for validation_object in validation_dataset:
-            validation_control_name = validation_object['validation_control_name']
+            validation_control_name = validation_object['validate_control_name']
             if validation_control_name == "user_name":
                 txt_validation = validation_object['user_name']
                 user_management_page.validate_username(txt_validation)

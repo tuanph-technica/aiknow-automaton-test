@@ -17,6 +17,11 @@ class ValidationControls(BaseDriver):
             return False, validation_error.text
         except:
             return True, ""
+    def validate_single_control(self,web_item,text_input,error_tag='mat-error'):
+        self.web_item.enter_web_item_text(web_item, text_input)
+        web_item.send_keys(Keys.TAB)
+
+
 
 
 

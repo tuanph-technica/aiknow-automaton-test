@@ -47,7 +47,8 @@ def setup(request):
     #url = readData(ENVIRONMENT_CONFIG_FILE,'Sheet2',2,3)
     #role = readData(ENVIRONMENT_CONFIG_FILE,'Sheet2',2,1)
     browser = 'chrome'
-    url = "http://aiknow-v2.technica.vn/auth/login"
+    url = "http://aiknow.technica.vn"
+    #url = "http://aiknow-v2.technica.vn/auth/login"
     headless = request.config.getoption("--headless")
     
     if browser == 'chrome':

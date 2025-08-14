@@ -44,50 +44,60 @@ class ChatPage(BaseDriver):
             if link.text == drop_down_item_text:
                 link.click()
                 break
-    def chat_single_question(self,record_test):
+    def chat_single_question(self,record_test,number_of_chat):
         user_query_text_control = self.find_element(By.CLASS_NAME,"chat-input")
         div_control = user_query_text_control.find_element(By.ID,"chat-input")
         self.web_elements.enter_web_item_text(div_control,record_test['question'])
         start_time = time.time()
         try :
             self.web_elements.press_enter_on_text_control(div_control)
-            parent = WebDriverWait(self.driver,DEAD_LINE_TIME).until(
-                element_has_children((By.XPATH, "//markdown[@class='hljs text-break']"))
+            parent = self.find_element(By.TAG_NAME, "app-chat-chat-content")
+
+
+            rec = record_test.copy()
+            button_quotes = WebDriverWait(self.driver, 300).until(
+                lambda driver: parent.find_elements(By.XPATH, "//button[contains(@class, 'btn-quote')]")
+                if len(parent.find_elements(By.XPATH, "//button[contains(@class, 'btn-quote')]")) == number_of_chat
+                else False
             )
+            item_contents = parent.find_elements(By.XPATH, "//div[contains(@class,'bubble-item-assistant')]")
             end_time = time.time()
             elapsed_time = end_time - start_time
-            record_test['actual_answer'] = parent.text
-            record_test['test_result'] = "pass"
-            record_test['time_response'] = str(elapsed_time) + " second(s)"
-            grant_parent = parent.find_element(By.XPATH, "..")
-            button_quotes = grant_parent.find_elements(By.XPATH, "//button[contains(@class, 'btn-quote')]")
+            rec['actual_answer'] = item_contents[-1].text
+            rec['test_result'] = "pass"
+            rec['time_response'] = str(elapsed_time) + " second(s)"
             button_quotes[-1].click()
-            time.sleep(10)
+            time.sleep(5)
             div_contents = self.find_element(By.XPATH,"//div[contains(@class, 'modal-body scroll')]")
-            record_test['context'] = div_contents.text
+            rec['context'] = div_contents.text
             ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
-        except:
-            record_test['actual_answer'] = ""
-            record_test['test_result'] = "fail"
-            record_test['time_response'] = "exceed 5 minutes"
-            record_test['context'] = ""
-            record_test['screen_shot'] = self.take_screenshot()
-        return record_test
+        except Exception as e:
+            print(e)
+            rec['actual_answer'] = ""
+            rec['test_result'] = "fail"
+            rec['time_response'] = "exceed 5 minutes"
+            rec['context'] = ""
+            rec['screen_shot'] = self.take_screenshot()
+        return rec
 
     def set_model_name(self,model_name):
         button_dropdown = self.find_element(By.XPATH, self.BUTTON_DROP_DOWN)
         button_dropdown.click()
         self.get_dropdown_item_by_name(model_name)
     def chat_with_model(self,model_name,data):
-        button_dropdown = self.find_element(By.XPATH, self.BUTTON_DROP_DOWN)
-        button_dropdown.click()
-        self.get_dropdown_item_by_name(model_name)
+        if model_name != "":
+            button_dropdown = self.find_element(By.XPATH, self.BUTTON_DROP_DOWN)
+            button_dropdown.click()
+            self.get_dropdown_item_by_name(model_name)
         lst_result = []
+        number_of_chat = 0
         for record_test in data:
-            record_test['model'] = model_name
-            return_record = self.chat_single_question(record_test=record_test)
-            time.sleep(15)
+            rect = record_test.copy()
+            rect['model'] = model_name
+            return_record = self.chat_single_question(rect,number_of_chat+1)
+            time.sleep(4)
             lst_result.append(return_record)
+            number_of_chat = number_of_chat + 1
         return lst_result
 
     def enter_new_chat(self):

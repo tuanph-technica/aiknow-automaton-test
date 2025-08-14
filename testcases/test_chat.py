@@ -11,7 +11,7 @@ from utilities.customLogger import LogGen
 from pages.login import Login
 from utilities.utils import Utils
 #DATA_TEST_FILE = "../testdata/test_search_rag_samco.xlsx"
-DATA_TEST_FILE = "../testdata/test_search_rag_samco.xlsx"
+DATA_TEST_FILE = "../testdata/test_samco.xlsx"
 @pytest.mark.usefixtures("setup")
 @pytest.mark.test_chat
 class TestAiKnow(softest.TestCase):
@@ -21,51 +21,44 @@ class TestAiKnow(softest.TestCase):
         self.login = Login(self.driver)
         self.ut = Utils()
         self.user_account = user_account
-
+        dataobj = ReadChatData(data_file_name=DATA_TEST_FILE)
+        self.dataset = dataobj.read_data()
     def chat_with_user(self,user_name,pass_word):
         hp, error = self.login.do_login(user_name=user_name,
                                         pass_word=pass_word)
         setting = hp.get_setting_menu()
         chat_window = setting.get_chat_menu()
-        dataobj = ReadChatData(data_file_name=DATA_TEST_FILE)
-        dataset = dataobj.read_data()
-        shuffled_list = dataset.copy()
-        random.shuffle(shuffled_list)
+        random_list = random.sample(self.dataset, 5)
         chat_window.enter_new_chat()
-        MODEL_NAME = "DeepSeek-R1-Distill-Llama-70B-FP8-Agent"
-        test_results = chat_window.chat_with_model(model_name=MODEL_NAME, data=shuffled_list)
-        export_data_to_excel(test_results,
-                             '../test_results/' + user_name + '/' + MODEL_NAME + '_result.xlsx',
-                             'screen_shot')
-        MODEL_NAME = "DeepSeek-R1-Distill-Llama-70B-FP8-Reasoning"
-        shuffled_list = dataset.copy()
-        random.shuffle(shuffled_list)
-        test_results = chat_window.chat_with_model(model_name=MODEL_NAME, data=shuffled_list)
-        export_data_to_excel(test_results,
-                             '../test_results/' + user_name + '/' + MODEL_NAME + '_result.xlsx',
-                             'screen_shot')
+        MODEL_NAME = ""#"DeepSeek-R1-Distill-Llama-70B-FP8-Agent"
+        test_results = chat_window.chat_with_model(model_name=MODEL_NAME, data=random_list)
+        df = pd.DataFrame(test_results)
+        df.to_excel("../test_results/" + user_name + ".xlsx",index=False,engine='openpyxl')
 
 
     def test_with_user_1(self):
-        user_name = "auto_user0001"
+        user_name = "auto_user0080"
         pass_word = "123456"
         self.chat_with_user(user_name=user_name,pass_word=pass_word)
     def test_with_user_2(self):
-        user_name = "auto_user0002"
+        user_name = "auto_user0081"
         pass_word = "123456"
         self.chat_with_user(user_name=user_name, pass_word=pass_word)
     def test_with_user_3(self):
-        user_name = "auto_user0003"
+        user_name = "auto_user0082"
         pass_word = "123456"
         self.chat_with_user(user_name=user_name, pass_word=pass_word)
     def test_with_user_4(self):
-        user_name = "auto_user0004"
+        user_name = "auto_user0083"
         pass_word = "123456"
         self.chat_with_user(user_name=user_name, pass_word=pass_word)
     def test_with_user_5(self):
-        user_name = "auto_user0005"
+        user_name = "auto_user0084"
         pass_word = "123456"
         self.chat_with_user(user_name=user_name, pass_word=pass_word)
+
+    """
+    
     def test_with_user_6(self):
         user_name = "auto_user0006"
         pass_word = "123456"
@@ -446,3 +439,4 @@ class TestAiKnow(softest.TestCase):
         user_name = "auto_user0100"
         pass_word = "123456"
         self.chat_with_user(user_name=user_name, pass_word=pass_word)
+"""

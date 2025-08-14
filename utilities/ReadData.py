@@ -21,30 +21,20 @@ class ReadChatData(ReadData):
         super().__init__(data_file_name)
         self.sheet_name = "Testcase_Ver4_22072025"
     def read_data(self):
-        df = pd.read_excel(self.data_file_name,engine="openpyxl")
-        df = df.iloc[:,4:8]
-        df.columns = ['question','question_vi','expected_context','expected_result']
-        df['model'] = ""
-        df['actual_answer'] = ""
-        df['test_result'] = ""
-        df['screen_shot'] = ""
+        df = pd.read_excel(self.data_file_name,engine="openpyxl",header=0)
         return df.to_dict('records')
 class ChatResponseData(ReadData):
     def __init__(self,data_file_name):
         super().__init__(data_file_name)
     def read_data(self):
-        df = pd.read_excel(self.data_file_name, engine="openpyxl")
-        df = df.iloc[:, [1,4,6,7]]
-        df.columns = ["file_name",'question', 'expected_context', 'expected_result']
-
-        df['file_name'] = df['file_name'].str.split('https').str[0]
-        df = df.dropna(subset=['file_name'])
+        df = pd.read_excel(self.data_file_name,header=0, engine="openpyxl")
         return df.to_dict('records')
 class UserManagementData(ReadData):
     def __init__(self,data_file_name):
         super().__init__(data_file_name)
     def read_data(self,sheet_name=""):
         df = pd.read_excel(self.data_file_name,sheet_name=sheet_name,header=0, engine="openpyxl")
+        df = df.fillna('')
         return df.to_dict('records')
 
 
