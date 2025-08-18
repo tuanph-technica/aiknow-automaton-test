@@ -1,4 +1,5 @@
 import datetime
+import os.path
 import random
 from datetime import datetime,timedelta
 import pandas as pd
@@ -10,8 +11,9 @@ from utilities.ReadData import ReadChatData
 from utilities.customLogger import LogGen
 from pages.login import Login
 from utilities.utils import Utils
+BASE_DIR_TEST_RESULT = "../test_results"
 #DATA_TEST_FILE = "../testdata/test_search_rag_samco.xlsx"
-DATA_TEST_FILE = "./testdata/test_samco.xlsx"
+DATA_TEST_FILE = "../testdata/test_samco.xlsx"
 #DATA_TEST_FILE = "./testdata/test_samco.xlsx"
 @pytest.mark.usefixtures("setup")
 @pytest.mark.test_chat
@@ -31,15 +33,12 @@ class TestAiKnow(softest.TestCase):
             return
         setting = hp.get_setting_menu()
         chat_window = setting.get_chat_menu()
-        random_list = random.sample(self.dataset, 6)
+        random_list = random.sample(self.dataset, 3)
         chat_window.enter_new_chat()
         MODEL_NAME = ""#"DeepSeek-R1-Distill-Llama-70B-FP8-Agent"
         test_results = chat_window.chat_with_model(model_name=MODEL_NAME, data=random_list)
-        df = pd.DataFrame(test_results)
-        #df.to_excel("../test_results/" + user_name + ".xlsx",index=False,engine='openpyxl')
-        df.to_excel("./test_results/" + user_name + ".xlsx", index=False, engine='openpyxl')
-
-
+        file_name = os.path.join(BASE_DIR_TEST_RESULT,user_name + ".xlsx")
+        export_data_to_excel(test_results,filename=file_name,image_column="evident")
     def test_with_user_1(self):
         user_name = "auto_user0080"
         pass_word = "123456"

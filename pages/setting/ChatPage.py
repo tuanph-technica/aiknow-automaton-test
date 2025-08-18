@@ -55,7 +55,7 @@ class ChatPage(BaseDriver):
 
 
             rec = record_test.copy()
-            rec['evident_error'] = None
+            rec['evident'] = None
             button_quotes = WebDriverWait(self.driver, 300).until(
                 lambda driver: parent.find_elements(By.XPATH, "//button[contains(@class, 'btn-quote')]")
                 if len(parent.find_elements(By.XPATH, "//button[contains(@class, 'btn-quote')]")) == number_of_chat
@@ -84,7 +84,7 @@ class ChatPage(BaseDriver):
             rec['test_result'] = "fail"
             rec['time_response'] = "exceed 5 minutes"
             rec['context'] = ""
-            rec['screen_shot'] = screen_shot
+            rec['evident'] = screen_shot
         return rec
 
     def set_model_name(self,model_name):
