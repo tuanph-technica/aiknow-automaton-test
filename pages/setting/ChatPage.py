@@ -55,16 +55,23 @@ class ChatPage(BaseDriver):
 
 
             rec = record_test.copy()
+            rec['evident_error'] = None
             button_quotes = WebDriverWait(self.driver, 300).until(
                 lambda driver: parent.find_elements(By.XPATH, "//button[contains(@class, 'btn-quote')]")
                 if len(parent.find_elements(By.XPATH, "//button[contains(@class, 'btn-quote')]")) == number_of_chat
                 else False
             )
+            screen_shot = self.take_screenshot()
             item_contents = parent.find_elements(By.XPATH, "//div[contains(@class,'bubble-item-assistant')]")
             end_time = time.time()
             elapsed_time = end_time - start_time
-            rec['actual_answer'] = item_contents[-1].text
-            rec['test_result'] = "pass"
+            if len(item_contents[-1].text.strip()) == 0:
+                rec['actual_answer'] = ""
+                rec['test_result'] = "fail"
+                rec['evident'] = screen_shot
+            else:
+                rec['actual_answer'] = item_contents[-1].text
+                rec['test_result'] = "pass"
             rec['time_response'] = str(elapsed_time) + " second(s)"
             button_quotes[-1].click()
             time.sleep(5)
@@ -77,7 +84,7 @@ class ChatPage(BaseDriver):
             rec['test_result'] = "fail"
             rec['time_response'] = "exceed 5 minutes"
             rec['context'] = ""
-            rec['screen_shot'] = self.take_screenshot()
+            rec['screen_shot'] = screen_shot
         return rec
 
     def set_model_name(self,model_name):

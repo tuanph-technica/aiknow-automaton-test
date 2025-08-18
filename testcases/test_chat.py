@@ -11,7 +11,8 @@ from utilities.customLogger import LogGen
 from pages.login import Login
 from utilities.utils import Utils
 #DATA_TEST_FILE = "../testdata/test_search_rag_samco.xlsx"
-DATA_TEST_FILE = "../testdata/test_samco.xlsx"
+DATA_TEST_FILE = "./testdata/test_samco.xlsx"
+#DATA_TEST_FILE = "./testdata/test_samco.xlsx"
 @pytest.mark.usefixtures("setup")
 @pytest.mark.test_chat
 class TestAiKnow(softest.TestCase):
@@ -26,14 +27,17 @@ class TestAiKnow(softest.TestCase):
     def chat_with_user(self,user_name,pass_word):
         hp, error = self.login.do_login(user_name=user_name,
                                         pass_word=pass_word)
+        if error != "":
+            return
         setting = hp.get_setting_menu()
         chat_window = setting.get_chat_menu()
-        random_list = random.sample(self.dataset, 5)
+        random_list = random.sample(self.dataset, 6)
         chat_window.enter_new_chat()
         MODEL_NAME = ""#"DeepSeek-R1-Distill-Llama-70B-FP8-Agent"
         test_results = chat_window.chat_with_model(model_name=MODEL_NAME, data=random_list)
         df = pd.DataFrame(test_results)
-        df.to_excel("../test_results/" + user_name + ".xlsx",index=False,engine='openpyxl')
+        #df.to_excel("../test_results/" + user_name + ".xlsx",index=False,engine='openpyxl')
+        df.to_excel("./test_results/" + user_name + ".xlsx", index=False, engine='openpyxl')
 
 
     def test_with_user_1(self):
