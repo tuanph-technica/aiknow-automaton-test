@@ -158,27 +158,25 @@ EXPECTED RESPONSE:
 
 ACTUAL RESPONSE FROM CHATBOT:
 {actual_response}
-あなたは
-Please evaluate the ACTUAL RESPONSE based on the following criteria:
+あなたは日本語の専門家です。以下の基準に基づいて、回答の品質を評価してください。
+  関連性：質問と回答の内容、文脈、および期待される回答との適合性を評価し、0〜10点で採点する。
+  正確性：質問と文脈に基づいた回答の正確さを評価する（不必要に短すぎたり、長すぎて要点から外れる回答を避ける）。0〜10点で採点する。
+  網羅性：回答が文脈内の重要なポイントをすべてカバーしているかを評価し、0〜10点で採点する。
+  明確さ：回答が分かりやすく、構造が明確であるかを評価し、0〜10点で採点する。
+  期待回答との類似度：回答が期待される回答とどの程度類似しているか（同義語の使用は許容する）。0〜10点で採点する。
 
-1. RELEVANCE (0-10): How relevant is the response to the context and expected answer?
-2. ACCURACY (0-10): How factually correct is the information provided?
-3. COMPLETENESS (0-10): Does it cover all important points from the expected response?
-4. COHERENCE (0-10): Is the response well-structured and easy to understand?
-5. SIMILARITY (0-10): How similar is it to the expected response in meaning?
-
-Provide your evaluation in the following JSON format:
+回答の品質を評価は JSON format:
 {{
-    "relevance_score": <score>,
-    "accuracy_score": <score>,
-    "completeness_score": <score>,
-    "coherence_score": <score>,
-    "similarity_score": <score>,
-    "detailed_feedback": "<detailed explanation of strengths and weaknesses>",
-    "suggestions": ["<suggestion 1>", "<suggestion 2>", ...]
+    "関連性なスコア": <スコア>,
+    "正確性なスコア": <スコア>,
+    "網羅性なスコア": <スコア>,
+    "明確さスコア": <スコア>,
+    "期待回答との類似度なスコア": <スコア>,
+    "詳細なフィードバック": "<強みと弱みの詳細な説明>",
+    "お勧め": ["<お勧め 1>", "<お勧め 2>", ...]
 }}
 
-Be objective and precise in your scoring. Only return valid JSON."""
+評価は客観的かつ正確に行ってください. 有効なJSONのみを返してください。"""
 
         return prompt
 
