@@ -38,6 +38,24 @@ class TestUserManagement(softest.TestCase):
                 txt_validation = validation_object['email']
                 user_management_page.valiadte_email(txt_validation)
 
+    def test_add_user(self):
+        user_name = "auto_user0008"
+        pass_word = "123456"
+        hp, error = self.login.do_login(user_name=user_name,
+                                        pass_word=pass_word)
+        user_management_page = hp.get_user_management_menu()
+        user_management_page.open_add_user()
+        dataset_obj = UserManagementData(DATA_TEST_FILE)
+        add_dataset = dataset_obj.read_data(sheet_name="AddUser")
+        test_results = []
+        for add_user_info in add_dataset:
+            ret = user_management_page.add_user(add_user_info)
+            test_results.append(ret)
+
+
+
+
+
 
 
 

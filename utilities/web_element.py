@@ -9,6 +9,12 @@ NZ_OPTION_ITEM = "nz-option-item"
 class WebItem(BaseDriver):
     def __init__(self,driver):
         super().__init__(driver)
+    def enter_text(self,text_element,text_value):
+        time.sleep(1)
+        text_element.send_keys(Keys.CONTROL + "a")  # Select all
+        text_element.send_keys(Keys.DELETE)  # Delete selected text
+        text_element.send_keys(text_value)
+        text_element.send_keys(Keys.TAB)
     def enter_web_item_text(self,text_element, text_value):
         time.sleep(1)
         text_element.send_keys(Keys.CONTROL + "a")  # Select all
@@ -46,6 +52,14 @@ class WebItem(BaseDriver):
         body = table_control.find_element(By.TAG_NAME,"tbody")
         rows = body.find_elements(By.TAG_NAME,"tr")
         return rows[index]
+    def choices_items_in_dropdown(self,dropdown_control=None,choice_items=[]):
+
+        self.driver.execute_script("arguments[0].click();", dropdown_control)
+        options = dropdown_control.find_elements(By.TAG_NAME,"option")
+        for option in options:
+            if option.text in choice_items:
+                options.click()
+
 
 
 
