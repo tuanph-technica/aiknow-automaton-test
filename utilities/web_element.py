@@ -55,10 +55,12 @@ class WebItem(BaseDriver):
     def choices_items_in_dropdown(self,dropdown_control=None,choice_items=[]):
 
         self.driver.execute_script("arguments[0].click();", dropdown_control)
-        options = dropdown_control.find_elements(By.TAG_NAME,"option")
+        list_boxes = self.find_element(By.XPATH, "//div[@role='listbox']")
+        options = list_boxes.find_elements(By.XPATH, "//div[@role='option']")
+
         for option in options:
             if option.text in choice_items:
-                options.click()
+                option.click()
 
 
 

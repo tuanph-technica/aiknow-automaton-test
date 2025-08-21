@@ -88,8 +88,8 @@ class UserManagement(BaseDriver):
         roles = user_obj['roles'].split(',')
         self.web_elements.choices_items_in_dropdown(dropdown_control=select_element,choice_items=roles)
         div_element = self.find_element(By.CSS_SELECTOR, "div.modal-body.d-flex.gap-3.justify-content-end")
-        buttons = div_element.find_elements(By.TAG_NAME,"button")
-        buttons[1].click()
+        button = self.find_element(By.XPATH, "//button[text()='Confirm']")
+        self.driver.execute_script("arguments[0].click();", button)
 
 
 
