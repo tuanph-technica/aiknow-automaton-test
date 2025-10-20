@@ -10,11 +10,11 @@ service = Service(ChromeDriverManager().install())
 
 # User accounts for parallel testing
 USER_ACCOUNTS = [
-    {"username": "auto_user0001", "password": "123456"},
-    {"username": "auto_user0002", "password": "123456"},
-    {"username": "auto_user0002", "password": "123456"},
-    {"username": "auto_user0004", "password": "123456"},
-    {"username": "auto_user0005", "password": "123456"},
+    {"username": "auto_user0008", "password": "123456"},
+    {"username": "auto_user0008", "password": "123456"},
+    {"username": "auto_user0008", "password": "123456"},
+    {"username": "auto_user0008", "password": "123456"},
+    {"username": "auto_user0008", "password": "123456"},
 ]
 
 @pytest.fixture(scope="session")

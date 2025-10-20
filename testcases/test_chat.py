@@ -13,8 +13,8 @@ from pages.login import Login
 from utilities.utils import Utils
 BASE_DIR_TEST_RESULT = "../test_results"
 #DATA_TEST_FILE = "../testdata/test_search_rag_samco.xlsx"
-DATA_TEST_FILE = "../testdata/test_samco.xlsx"
-#DATA_TEST_FILE = "./testdata/test_samco.xlsx"
+#DATA_TEST_FILE = "../testdata/test_samco.xlsx"
+DATA_TEST_FILE = "./testdata/test_samco.xlsx"
 @pytest.mark.usefixtures("setup")
 @pytest.mark.test_chat
 class TestAiKnow(softest.TestCase):
