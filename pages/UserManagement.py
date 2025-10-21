@@ -273,17 +273,28 @@ class UserManagement(BaseDriver):
             bool: True if search executed successfully
         """
         try:
+            # Wait for any loading overlays to disappear
+            time.sleep(0.5)
+
+            # Wait for search input to be clickable and interactable
             search_input = self.wait_until_element_is_clickable(*self.SEARCH_INPUT)
+
+            # Clear the input field
             search_input.clear()
+            time.sleep(0.3)
+
+            # Type the search term
             search_input.send_keys(search_term)
 
+            # Wait for and click search button
             search_button = self.wait_until_element_is_clickable(*self.SEARCH_BUTTON)
             search_button.click()
 
-            time.sleep(2)  # Wait for search results
+            time.sleep(2)  # Wait for search results to load
             return True
 
-        except (TimeoutException, NoSuchElementException):
+        except (TimeoutException, NoSuchElementException) as e:
+            print(f"Search error: {type(e).__name__}: {str(e)}")
             return False
 
     def filter_by_role(self, roles: List[str]) -> bool:
@@ -517,167 +528,22 @@ class UserManagement(BaseDriver):
 
             # Roles (required, multi-select with Choices.js)
             print("Selecting roles...")
-
             # Find the underlying hidden select element
             select_element = self.driver.find_element(By.CSS_SELECTOR, "select[formcontrolname='roles']")
             self.driver.execute_script("arguments[0].click()",select_element)
-            # Scroll to ensure visibility
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", select_element)
-            time.sleep(0.5)
 
-            # Map role names to values based on the HTML you provided:
-            # <option value="1">System Admin</option>
-            # <option value="3">CEO</option>
-            # <option value="4">User</option>
-            role_value_map = {
-                'System Admin': '1',
-                'CEO': '3',
-                'User': '4'
-            }
-
-            # Comprehensive JavaScript approach that:
-            # 1. Sets selected attribute on options by value
-            # 2. Unhides the select temporarily to make it clickable
-            # 3. Triggers all necessary events for both Choices.js and Angular
-            # 4. Removes invalid classes and adds valid classes
-
-            js_script = """
-            var select = arguments[0];
-            var roleNames = arguments[1];
-            var roleValueMap = arguments[2];
-
-            // Find the Choices instance - it's stored on the parent element
-            var choicesWrapper = select.closest('.choices');
-            var choicesInstance = null;
-
-            // Try multiple ways to find the Choices instance
-            if (window.Choices && choicesWrapper) {
-                // Check if instance is stored on the wrapper element
-                for (var prop in choicesWrapper) {
-                    if (prop.startsWith('__reactProps') || prop.startsWith('__vue')) {
-                        // React or Vue component
-                        continue;
-                    }
-                    if (choicesWrapper[prop] && typeof choicesWrapper[prop] === 'object') {
-                        if (choicesWrapper[prop].constructor && choicesWrapper[prop].constructor.name === 'Choices') {
-                            choicesInstance = choicesWrapper[prop];
-                            break;
-                        }
-                    }
-                }
-
-                // Alternative: check select element itself
-                if (!choicesInstance) {
-                    for (var prop in select) {
-                        if (select[prop] && typeof select[prop] === 'object') {
-                            if (select[prop].constructor && select[prop].constructor.name === 'Choices') {
-                                choicesInstance = select[prop];
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            var selectedCount = 0;
-
-            if (choicesInstance) {
-                // Use Choices API directly
-                roleNames.forEach(function(roleName) {
-                    var value = roleValueMap[roleName];
-                    if (value) {
-                        try {
-                            choicesInstance.setChoiceByValue(value);
-                            selectedCount++;
-                        } catch (e) {
-                            // Fallback: manually modify and refresh
-                            for (var i = 0; i < select.options.length; i++) {
-                                if (select.options[i].value === value) {
-                                    select.options[i].selected = true;
-                                    selectedCount++;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Force Choices to refresh from the select element
-                try {
-                    choicesInstance._render();
-                } catch (e) {}
-
-            } else {
-                // No Choices instance found - direct manipulation
-                roleNames.forEach(function(roleName) {
-                    var value = roleValueMap[roleName];
-                    if (value) {
-                        for (var i = 0; i < select.options.length; i++) {
-                            if (select.options[i].value === value) {
-                                select.options[i].selected = true;
-                                select.options[i].setAttribute('selected', 'selected');
-                                selectedCount++;
-                                break;
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Update classes
-            select.classList.remove('ng-invalid', 'is-invalid', 'ng-untouched', 'ng-pristine');
-            select.classList.add('ng-valid', 'ng-touched', 'ng-dirty');
-
-            // Trigger events
-            var changeEvent = new Event('change', { bubbles: true });
-            select.dispatchEvent(changeEvent);
-
-            var inputEvent = new Event('input', { bubbles: true });
-            select.dispatchEvent(inputEvent);
-
-            return selectedCount;
-            """
-
-            try:
-                selected_count = self.driver.execute_script(js_script, select_element, user_data['roles'], role_value_map)
-                print(f"  JavaScript selected {selected_count} role(s) by value")
-
-                # Wait for UI and Angular to process
-                time.sleep(1.5)
-
-                # Verify selection in the Choices.js UI
-                try:
-                    choices_container = self.driver.find_element(By.CSS_SELECTOR, "div.choices[data-type='select-multiple']")
-                    selected_items = choices_container.find_elements(By.CSS_SELECTOR, "div.choices__list--multiple .choices__item[data-deletable]")
-                    print(f"  Choices.js UI shows {len(selected_items)} selected role(s)")
-                    for item in selected_items:
-                        item_text = item.text.replace('Remove item', '').strip()
-                        print(f"    - {item_text}")
-                except Exception as e:
-                    print(f"  Could not verify Choices.js UI: {str(e)}")
-
-                # Verify the select element itself
-                try:
-                    selected_options = select_element.find_elements(By.CSS_SELECTOR, "option[selected]")
-                    print(f"  Select element has {len(selected_options)} selected option(s)")
-                except Exception as e:
-                    print(f"  Could not verify select element: {str(e)}")
-
-            except Exception as e:
-                print(f"  ✗ Failed to select roles: {str(e)}")
-
-            print("Form filled successfully")
-
-            # Wait a moment for form validation to process
-            time.sleep(2)
-
+            all_items = self.driver.find_elements(By.CLASS_NAME, "choices__item--selectable")
+            all_items[8].click()
+            button_confirm = self.driver.find_element(By.XPATH, "//button[normalize-space()='Confirm']")
+            button_confirm.click()
             return True
 
-        except (TimeoutException, NoSuchElementException, KeyError) as e:
-            print(f"Error filling form: {type(e).__name__}: {str(e)}")
-            import traceback
-            traceback.print_exc()
+
+        except:
             return False
+
+
+
 
     def get_add_user_form_validation_errors(self) -> list:
         """
@@ -800,7 +666,7 @@ class UserManagement(BaseDriver):
 
     def open_edit_user_modal(self, username: str) -> bool:
         """
-        Open the Edit User modal by clicking on a user's action button.
+        Open the Edit User modal by clicking on the user's avatar or username.
 
         Args:
             username: Username of the user to edit
@@ -817,18 +683,23 @@ class UserManagement(BaseDriver):
                 if len(cells) > self.COL_USERNAME:
                     row_username = cells[self.COL_USERNAME].text.strip()
                     if row_username == username:
-                        # Click the action button in this row
-                        action_button = cells[self.COL_ACTION].find_element(By.TAG_NAME, "button")
-                        action_button.click()
+                        # Click the username cell to open the edit modal
+                        # (can also click on avatar in COL_AVATAR)
+                        cells[self.COL_USERNAME].click()
 
-                        # Wait for modal to appear
-                        self.wait.until(EC.visibility_of_element_located(self.EDIT_USER_MODAL))
+                        # Wait for modal to appear using the actual modal structure
+                        # The modal has class "modal-body" with "profile profile-modal" inside
+                        modal_locator = (By.CSS_SELECTOR, ".modal-body .profile.profile-modal")
+                        self.wait.until(EC.visibility_of_element_located(modal_locator))
+
                         time.sleep(1)
                         return True
 
             return False  # User not found
 
-        except (TimeoutException, NoSuchElementException):
+        except (TimeoutException, NoSuchElementException) as e:
+            # Log the exception for debugging
+            print(f"Exception in open_edit_user_modal: {type(e).__name__}: {str(e)}")
             return False
 
     def get_user_profile_data(self) -> Optional[Dict[str, str]]:
@@ -1112,10 +983,26 @@ class UserManagement(BaseDriver):
                         # Click using JavaScript to handle the custom toggle
                         self.driver.execute_script("arguments[0].click();", toggle_input)
 
-                        time.sleep(1)  # Wait for status change
+                        # Wait for confirmation modal to appear
+                        time.sleep(1)
+
+                        # Handle confirmation modal if it appears
+                        try:
+                            # Wait for and click the confirm button in the modal
+                            confirm_button_locator = (By.CSS_SELECTOR, "#modal-document-delete-confirm .btn-primary, .modal.show .btn-primary")
+                            confirm_button = self.wait.until(EC.element_to_be_clickable(confirm_button_locator))
+                            confirm_button.click()
+
+                            # Wait for modal to disappear
+                            time.sleep(1)
+                        except TimeoutException:
+                            # No confirmation modal appeared, which is fine
+                            pass
+
                         return True
 
             return False  # User not found
 
-        except (NoSuchElementException, TimeoutException):
+        except (NoSuchElementException, TimeoutException) as e:
+            print(f"Error in toggle_user_status: {type(e).__name__}: {str(e)}")
             return False

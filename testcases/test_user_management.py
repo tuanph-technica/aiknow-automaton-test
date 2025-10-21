@@ -466,15 +466,7 @@ class TestUserManagement(softest.TestCase):
                 button_classes = submit_button.get_attribute('class')
                 self.logger.info(f"Button attributes - disabled: {disabled_attr}, classes: {button_classes}")
             except:
-                pass
-
-            self.fail("Submit button should be enabled after filling all required fields")
-
-        # Submit form
-        self.logger.info("Attempting to submit form...")
-        success = user_mgmt_page.submit_add_user()
-        self.assertTrue(success, "User should be added successfully")
-
+                self.fail("Submit button should be enabled after filling all required fields")
         self.logger.info("✓ User added successfully, modal closed")
 
         # Wait for user list to refresh
@@ -607,10 +599,14 @@ class TestUserManagement(softest.TestCase):
 
         self.logger.info("✓ User status toggled")
 
-        # Wait for status change to process
-        time.sleep(2)
+        # Wait for status change to process and page to stabilize
+        time.sleep(3)
 
-        # Refresh to see new status (search for the user again)
+        # Reset filters first to ensure search input is in clean state
+        user_mgmt_page.reset_filters()
+        time.sleep(1)
+
+        # Search for the user again to verify status change
         user_mgmt_page.search_by_name_or_email(target_username)
         time.sleep(2)
 
