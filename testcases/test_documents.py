@@ -112,21 +112,30 @@ class TestDocuments(softest.TestCase):
         from selenium.webdriver.common.by import By
         from selenium.webdriver.support.ui import WebDriverWait
         from selenium.webdriver.support import expected_conditions as EC
+        from pages.homepage import AiKnowHomePage
 
-        self.logger.info(f"Logging in as {username}")
-        self.home_page, error = self.login.do_login(user_name=username, pass_word=password)
-
-        if error:
-            self.logger.error(f"Login failed: {error}")
-            pytest.fail(f"Login failed: {error}")
-
-        # Verify login was successful
+        # Check if already logged in
+        self.home_page = AiKnowHomePage(self.driver)
         login_status = self.home_page.check_login_success()
-        if login_status != "success":
-            self.logger.error("Login verification failed")
-            pytest.fail("Login verification failed")
 
-        self.logger.info("Login successful, navigating to Documents page")
+        if login_status != "success":
+            # Need to login
+            self.logger.info(f"Not logged in, performing login as {username}...")
+            self.home_page, error = self.login.do_login(user_name=username, pass_word=password)
+
+            if error:
+                self.logger.error(f"Login failed: {error}")
+                pytest.fail(f"Login failed: {error}")
+
+            # Verify login was successful
+            login_status = self.home_page.check_login_success()
+            if login_status != "success":
+                self.logger.error("Login verification failed")
+                pytest.fail("Login verification failed")
+
+            self.logger.info("Login successful")
+        else:
+            self.logger.info("Already logged in, reusing session")
 
         # Wait for homepage to be fully loaded
         time.sleep(2)

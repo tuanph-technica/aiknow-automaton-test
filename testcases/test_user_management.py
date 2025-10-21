@@ -73,17 +73,29 @@ class TestUserManagement(softest.TestCase):
         Returns:
             UserManagement: User Management page object
         """
-        self.logger.info("Logging in with test account...")
-        username = self.user_account["username"]
-        password = self.user_account["password"]
+        from pages.homepage import AiKnowHomePage
 
-        homepage, error_message = self.login.do_login(user_name=username, pass_word=password)
+        # Check if already logged in
+        homepage = AiKnowHomePage(self.driver)
+        login_status = homepage.check_login_success()
 
-        if error_message:
-            self.logger.error(f"Login failed: {error_message}")
-            pytest.fail(f"Failed to login: {error_message}")
+        if login_status != "success":
+            # Need to login
+            self.logger.info("Not logged in, performing login...")
+            username = self.user_account["username"]
+            password = self.user_account["password"]
 
-        self.logger.info("Login successful, navigating to User Management page...")
+            homepage, error_message = self.login.do_login(user_name=username, pass_word=password)
+
+            if error_message:
+                self.logger.error(f"Login failed: {error_message}")
+                pytest.fail(f"Failed to login: {error_message}")
+
+            self.logger.info("Login successful")
+        else:
+            self.logger.info("Already logged in, reusing session")
+
+        # Navigate to User Management page
         user_mgmt_page = homepage.get_user_management_menu()
 
         # Wait for page to load
