@@ -6,19 +6,21 @@ import pandas as pd
 import pytest
 import softest
 import time
-from utilities.ExcelImageWriter import export_data_to_excel
+from utilities.ChatBotResultWriter import export_chatbot_results
 from utilities.ReadData import ReadChatData
 from utilities.customLogger import LogGen
 from pages.login import Login
+from pages.ChatBotPage import ChatBotPage
 from utilities.utils import Utils
-BASE_DIR_TEST_RESULT = "../test_results"
-#DATA_TEST_FILE = "../testdata/test_search_rag_samco.xlsx"
-#DATA_TEST_FILE = "../testdata/test_samco.xlsx"
-DATA_TEST_FILE = "./testdata/test_samco.xlsx"
+
+BASE_DIR_TEST_RESULT = "./test_results"
+DATA_TEST_FILE = "./testdata/test_search_rag_samco.xlsx"
+
 @pytest.mark.usefixtures("setup")
 @pytest.mark.test_chat
 class TestAiKnow(softest.TestCase):
     logger = LogGen.loggen()
+
     @pytest.fixture(autouse=True)
     def class_setup(self, user_account):
         self.login = Login(self.driver)
@@ -26,19 +28,52 @@ class TestAiKnow(softest.TestCase):
         self.user_account = user_account
         dataobj = ReadChatData(data_file_name=DATA_TEST_FILE)
         self.dataset = dataobj.read_data()
-    def chat_with_user(self,user_name,pass_word):
-        hp, error = self.login.do_login(user_name=user_name,
-                                        pass_word=pass_word)
+
+    def chat_with_user(self, user_name, pass_word, num_questions=3):
+        """
+        Test chatbot with specific user
+
+        Args:
+            user_name: Username for login
+            pass_word: Password for login
+            num_questions: Number of random questions to test (default: 3)
+        """
+        # Login
+        hp, error = self.login.do_login(user_name=user_name, pass_word=pass_word)
         if error != "":
+            self.logger.error(f"Login failed for {user_name}: {error}")
             return
+
+        # Navigate to chat
         setting = hp.get_setting_menu()
         chat_window = setting.get_chat_menu()
-        random_list = random.sample(self.dataset, 3)
-        chat_window.enter_new_chat()
-        MODEL_NAME = ""#"DeepSeek-R1-Distill-Llama-70B-FP8-Agent"
-        test_results = chat_window.chat_with_model(model_name=MODEL_NAME, data=random_list)
-        file_name = os.path.join(BASE_DIR_TEST_RESULT,user_name + ".xlsx")
-        export_data_to_excel(test_results,filename=file_name,image_column="evident")
+
+        # Initialize ChatBotPage
+        chatbot_page = ChatBotPage(self.driver)
+
+        # Select random questions for testing
+        random_questions = random.sample(self.dataset, min(num_questions, len(self.dataset)))
+
+        # Configure model (empty string for default model)
+        MODEL_NAME = ""  # Or specify model like "Claude 4 Sonnet-Reasoning"
+
+        # Run tests
+        self.logger.info(f"Starting chat test for {user_name} with {len(random_questions)} questions")
+        test_results = chatbot_page.test_multiple_questions(
+            questions_data=random_questions,
+            model_name=MODEL_NAME
+        )
+
+        # Create output directory if it doesn't exist
+        os.makedirs(BASE_DIR_TEST_RESULT, exist_ok=True)
+
+        # Save results to Excel
+        file_name = os.path.join(BASE_DIR_TEST_RESULT, f"{user_name}.xlsx")
+        export_chatbot_results(test_results, filename=file_name)
+
+        self.logger.info(f"Test results saved to {file_name}")
+
+        return test_results
     def test_with_user_1(self):
         user_name = "auto_user0080"
         pass_word = "123456"
